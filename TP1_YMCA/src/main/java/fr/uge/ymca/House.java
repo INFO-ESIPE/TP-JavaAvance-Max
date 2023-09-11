@@ -43,27 +43,36 @@ public final class House {
 	}
 	
 	public Map<Integer, Integer> priceByDiscount() {
-		var result = new HashMap<Integer, Integer>();
-		
-	    discounts.forEach((k, v) -> {
-	    	if(!result.containsKey(v)) result.put(v, 0);
-	    	
-	    	
-	    	villages.forEach(resident -> {
-	    		//if(v == getPrice(resident)) result.put(v, result.get(v)+getPrice(resident));
-	    		switch(resident) {
-					case VillagePeople p -> {
-						if(discountOf(p.kind()) == v) result.put(v, result.get(v)+getPrice(resident));
-					}
-					case Minion m -> {
-						if(v == 0) result.put(v, result.get(v)+getPrice(resident));
-					}
-	    		};
-	    	});
-	    });
-		
-		
-		return result;
+	    var result = new HashMap<Integer, Integer>();
+
+		// Ajout des VillagePeople avec discount
+	    discounts
+			.forEach((k, v) -> 
+				result.put(v, 
+					villages.stream()
+						.filter(resident -> resident instanceof VillagePeople)
+						.map(resident -> (VillagePeople) resident)
+						.filter(villagePeople -> discountOf(villagePeople.kind()) == v)
+						.mapToInt(this::getPrice)
+						.sum()
+	    ));
+
+		// Récupération des VillagePeople sans discount
+		var list = villages.stream()
+				.filter(resident -> resident instanceof VillagePeople)
+				.map(resident -> (VillagePeople) resident)
+				.filter(villagePeople -> !discounts.containsKey(villagePeople.kind()))
+				.collect(Collectors.toList());
+
+		// Comptage des MINION dans la maison
+		int minionCount = (int)villages.stream().filter(resident -> resident instanceof Minion).count();
+
+		// Ajout des VillagePeople sans discount et des MINION dans la valeur 0
+		if(list.size() > 0 || minionCount > 0) {
+			result.put(0, list.stream().mapToInt(resident -> getPrice(resident)).sum() + minionCount);
+		}
+
+	    return result;
 	}
 	
 	private int getPrice(Resident resident) {
