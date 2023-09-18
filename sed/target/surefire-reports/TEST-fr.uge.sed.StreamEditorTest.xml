@@ -1,54 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="fr.uge.sed.StreamEditorTest" time="2.116" tests="0" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="fr.uge.sed.StreamEditorTest" time="0.137" tests="0" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="20"/>
-    <property name="sun.jnu.encoding" value="UTF-8"/>
-    <property name="java.class.path" value="/home/6ifo1/max.ducoudre/Bureau/sed/target/test-classes:/home/6ifo1/max.ducoudre/Bureau/sed/target/classes:/home/6ifo1/max.ducoudre/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.0/junit-jupiter-api-5.10.0.jar:/home/6ifo1/max.ducoudre/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/6ifo1/max.ducoudre/.m2/repository/org/junit/platform/junit-platform-commons/1.10.0/junit-platform-commons-1.10.0.jar:/home/6ifo1/max.ducoudre/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="C:\Users\maxou\OneDrive\Desktop\Java\java-avance\sed\target\test-classes;C:\Users\maxou\OneDrive\Desktop\Java\java-avance\sed\target\classes;C:\Users\maxou\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.0\junit-jupiter-api-5.10.0.jar;C:\Users\maxou\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\maxou\.m2\repository\org\junit\platform\junit-platform-commons\1.10.0\junit-platform-commons-1.10.0.jar;C:\Users\maxou\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;"/>
     <property name="java.vm.vendor" value="Oracle Corporation"/>
     <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
     <property name="java.vendor.url" value="https://java.oracle.com/"/>
-    <property name="os.name" value="Linux"/>
+    <property name="user.timezone" value="Europe/Paris"/>
+    <property name="os.name" value="Windows 11"/>
     <property name="java.vm.specification.version" value="20"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="FR"/>
-    <property name="sun.boot.library.path" value="/home/ens/tmp_ens/forax/java/jdk-20.0.2/lib"/>
-    <property name="sun.java.command" value="/home/6ifo1/max.ducoudre/Bureau/sed/target/surefire/surefirebooter-20230918175301120_3.jar /home/6ifo1/max.ducoudre/Bureau/sed/target/surefire 2023-09-18T17-53-01_073-jvmRun1 surefire-20230918175301120_1tmp surefire_0-20230918175301120_2tmp"/>
+    <property name="sun.boot.library.path" value="C:\Users\maxou\OneDrive\Desktop\Java\jdk-20.0.2\bin"/>
+    <property name="sun.java.command" value="C:\Users\maxou\AppData\Local\Temp\surefire541624240978461384\surefirebooter-20230918231737698_3.jar C:\Users\maxou\AppData\Local\Temp\surefire541624240978461384 2023-09-18T23-17-37_582-jvmRun1 surefire-20230918231737698_1tmp surefire_0-20230918231737698_2tmp"/>
     <property name="jdk.debug" value="release"/>
-    <property name="surefire.test.class.path" value="/home/6ifo1/max.ducoudre/Bureau/sed/target/test-classes:/home/6ifo1/max.ducoudre/Bureau/sed/target/classes:/home/6ifo1/max.ducoudre/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.0/junit-jupiter-api-5.10.0.jar:/home/6ifo1/max.ducoudre/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/home/6ifo1/max.ducoudre/.m2/repository/org/junit/platform/junit-platform-commons/1.10.0/junit-platform-commons-1.10.0.jar:/home/6ifo1/max.ducoudre/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:"/>
+    <property name="surefire.test.class.path" value="C:\Users\maxou\OneDrive\Desktop\Java\java-avance\sed\target\test-classes;C:\Users\maxou\OneDrive\Desktop\Java\java-avance\sed\target\classes;C:\Users\maxou\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.0\junit-jupiter-api-5.10.0.jar;C:\Users\maxou\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\maxou\.m2\repository\org\junit\platform\junit-platform-commons\1.10.0\junit-platform-commons-1.10.0.jar;C:\Users\maxou\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
-    <property name="user.home" value="/home/6ifo1/max.ducoudre"/>
+    <property name="user.home" value="C:\Users\maxou"/>
     <property name="user.language" value="fr"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
     <property name="java.version.date" value="2023-07-18"/>
-    <property name="java.home" value="/home/ens/tmp_ens/forax/java/jdk-20.0.2"/>
-    <property name="file.separator" value="/"/>
-    <property name="basedir" value="/home/6ifo1/max.ducoudre/Bureau/sed"/>
+    <property name="java.home" value="C:\Users\maxou\OneDrive\Desktop\Java\jdk-20.0.2"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\Users\maxou\OneDrive\Desktop\Java\java-avance\sed"/>
     <property name="style.color" value="always"/>
     <property name="java.vm.compressedOopsMode" value="Zero based"/>
     <property name="line.separator" value="&#10;"/>
-    <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
-    <property name="surefire.real.class.path" value="/home/6ifo1/max.ducoudre/Bureau/sed/target/surefire/surefirebooter-20230918175301120_3.jar"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\maxou\AppData\Local\Temp\surefire541624240978461384\surefirebooter-20230918231737698_3.jar"/>
+    <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="20.0.2+9-78"/>
-    <property name="user.name" value="max.ducoudre"/>
-    <property name="stdout.encoding" value="UTF-8"/>
-    <property name="path.separator" value=":"/>
-    <property name="os.version" value="6.1.0-0.deb11.7-amd64"/>
+    <property name="user.name" value="maxou"/>
+    <property name="stdout.encoding" value="Cp1252"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="file.encoding" value="UTF-8"/>
     <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
-    <property name="localRepository" value="/home/6ifo1/max.ducoudre/.m2/repository"/>
+    <property name="localRepository" value="C:\Users\maxou\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
-    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="java.io.tmpdir" value="C:\Users\maxou\AppData\Local\Temp\"/>
     <property name="java.version" value="20.0.2"/>
-    <property name="user.dir" value="/home/6ifo1/max.ducoudre/Bureau/sed"/>
+    <property name="user.dir" value="C:\Users\maxou\OneDrive\Desktop\Java\java-avance\sed"/>
     <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
-    <property name="native.encoding" value="UTF-8"/>
-    <property name="java.library.path" value="/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Users\maxou\OneDrive\Desktop\Java\jdk-20.0.2\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:/Users/maxou/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.6.v20230204-1729/jre/bin/server;C:/Users/maxou/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.6.v20230204-1729/jre/bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Users\maxou\AppData\Local\Microsoft\WindowsApps;;C:\Users\maxou\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\maxou\AppData\Roaming\npm;C:\WINDOWS\System32;;."/>
     <property name="java.vm.info" value="mixed mode, sharing"/>
-    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="stderr.encoding" value="Cp1252"/>
     <property name="java.vendor" value="Oracle Corporation"/>
     <property name="java.vm.version" value="20.0.2+9-78"/>
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>

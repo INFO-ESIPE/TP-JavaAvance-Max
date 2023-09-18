@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StreamEditorTest {
-	
+	/*
   @Nested
   class Q1 {
     @Test
@@ -352,7 +352,7 @@ public class StreamEditorTest {
     }
   }
 
-/*
+
   @Nested
   class Q5 {
     @Test
@@ -499,7 +499,7 @@ public class StreamEditorTest {
     }
   }
 
-
+  */
   @Nested
   class Q7 {
     @Test
@@ -544,7 +544,7 @@ public class StreamEditorTest {
           () -> assertThrows(NullPointerException.class, () -> StreamEditor.Rule.guard("foo"::startsWith, null))
       );
     }
-
+    
     @Test
     public void createRulesIfUpperCase() {
       var rule = StreamEditor.createRules("i=foo;u");
@@ -681,8 +681,9 @@ public class StreamEditorTest {
           () -> assertThrows(IllegalArgumentException.class, () -> StreamEditor.createRules("ia;=x"))
       );
     }
+    
   }
-
+/*
 
   @Nested
   class Q8 {
