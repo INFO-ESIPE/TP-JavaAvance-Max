@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: fr.uge.sed.StreamEditorTest
+Test set: fr.uge.sed.StreamEditorTest$Q5
 -------------------------------------------------------------------------------
-Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.652 s -- in fr.uge.sed.StreamEditorTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in fr.uge.sed.StreamEditorTest$Q5

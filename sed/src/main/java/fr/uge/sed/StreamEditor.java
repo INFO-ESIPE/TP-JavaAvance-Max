@@ -5,13 +5,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public final class StreamEditor {
 
@@ -29,7 +27,6 @@ public final class StreamEditor {
 		public default Rule andThen(Rule other) {
 			Objects.requireNonNull(other);
             return Rule.andThen(this, other);
-
 		} 
 		
 		static Rule guard(Predicate<String> condition, Rule rule) {
@@ -58,44 +55,37 @@ public final class StreamEditor {
 		}	
 	}
 	
-	/*
-	  		case('i') : return s -> Optional.of(s);
-			case('=') : return s -> Optional.of(s);
-			case(';') : return s -> Optional.of(s);
-	 */
+
+	private static Rule addRules(Rule providerRule, String rules) {
+		var result = providerRule;
+        for (char rule: rules.toCharArray()) {
+		    result = result.andThen(createRule(rule));
+	    }
+        return result;
+	}
 	
 	public static Rule createRules(String rules) {
-		Objects.requireNonNull(rules);
-		  Rule result = Optional::of;
-		     
-		    var pattern = Pattern.compile("i=(.*);(.*)");
-		    var matcher = pattern.matcher(rules);
-		    
-		    
-		    if(matcher.matches()) {
-		    	
-		    	/*
-		    	for (char rule: rules.toCharArray()) {
-		    		if(rule == 'i') break;
-			    	result = result.andThen(createRule(rule));
-		        }
-		        */
-	        
-	            var text = matcher.group(1);
-	            var conditionalRules = matcher.group(2);
-	            
-	            System.out.println("Apply " + conditionalRules + " on " + text);
-	            
-	            result = Rule.guard(s -> s.equals(text), createRules(conditionalRules));
+	  Objects.requireNonNull(rules);
+	  Rule result = Optional::of;
+	     
+	    var pattern = Pattern.compile("(.*)i=(.*);(.*)");
+	    var matcher = pattern.matcher(rules);
+	    
 
-		    } else {
-		    	
-			    for (char rule: rules.toCharArray()) {
-			    	result = result.andThen(createRule(rule));
-		        }
-		    }
+	    if(matcher.matches()) {
+            var previousRules = matcher.group(1);
+            var text = matcher.group(2);
+            var conditionalRules = matcher.group(3);
+            
+            
+            
+            result = StreamEditor.addRules(result, previousRules);
+            result = Rule.guard(s -> Pattern.matches(text, s), createRules(conditionalRules));
 
-			return result;
+	    } else {
+            result = StreamEditor.addRules(result, rules);
+	    }
+		return result;
 	}
 	
 	public void rewrite(BufferedReader reader, Writer writer) throws IOException {

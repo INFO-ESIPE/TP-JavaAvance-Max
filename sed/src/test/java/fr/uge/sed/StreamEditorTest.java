@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StreamEditorTest {
-	/*
+	
   @Nested
   class Q1 {
     @Test
@@ -499,7 +499,7 @@ public class StreamEditorTest {
     }
   }
 
-  */
+  /*
   @Nested
   class Q7 {
     @Test
@@ -602,6 +602,7 @@ public class StreamEditorTest {
     @Test
     public void createRulesDeleteThenIfLowerCase() {
       var rule = StreamEditor.createRules("di=HELLO;l");
+      System.out.println("foo : " +  rule.rewrite("foo"));
       assertAll(
           () -> assertTrue(rule.rewrite("foo").isEmpty()),
           () -> assertTrue(rule.rewrite("HELLO").isEmpty()),
@@ -683,7 +684,8 @@ public class StreamEditorTest {
     }
     
   }
-/*
+  */
+
 
   @Nested
   class Q8 {
@@ -769,7 +771,7 @@ public class StreamEditorTest {
       );
     }
   }
-
+/*
 
   @Nested
   class Q9 {

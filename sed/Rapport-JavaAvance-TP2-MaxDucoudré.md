@@ -202,15 +202,7 @@ public static Rule createRules(String rules) {
 7. On souhaite implanter la règle qui correspond au if, par exemple, "i=foo;u", qui veut dire si la ligne courante est égal à foo (le texte entre le '=' et le ';') alors, on met en majuscules sinon on recopie la ligne.
 Avant de modifier createRules(), on va créer, dans Rule, une méthode statique guard(function, rule) qui prend en paramètre une fonction et une règle et crée une règle qui est appliquée à la ligne courante si la fonction renvoie vrai pour cette ligne. Autrement dit, on veut pouvoir créer une règle qui s'applique uniquement aux lignes pour lesquelles la fonction renvoie vrai.
 Quelle interface fonctionnelle correspond à une fonction qui prend une String et renvoie un boolean ?
-Écrire la méthode statique guard(function, rule) et vérifier que les 4 premiers tests correspondant à "Q7" passent.
-
-Modifier la méthode createRules pour reconnaître un if, extraire le texte correspondant et utiliser la méthode guard(text, rule) pour créer la règle correspondant au if.
-On rappelle qu'en Java, on peut fabriquer l’automate qui reconnaît une expression régulière comme un objet de type Pattern que l'on créé avec la méthode Pattern.compile(regex), et que pour vérifier si une ligne correspond à cette expression régulière, on va créer un Matcher avec pattern.matcher(line) suivi d'un appel à matcher.matches().
-Vérifier que tous les tests marqués "Q7" passent.
-
-Note 1 : attention à ne pas créer le même automate pour reconnaitre l'expression régulière plusieurs fois...
-Note 2 : la notion de group pourra vous être utile.
-Note 3 : on peut se demander pourquoi passer une fonction et pas le texte sous forme de String en premier paramètre de guard... Il suffit de lire la question suivante pour avoir la réponse.
+Écrire la méthode statique guard(function, rule).
 
 *L'interface fonctionnelle qui correspond à une fonction qui prend une String et renvoie un boolean est `Predicate<String>`*
 *On ajoute la méthode `guard` à l'interface `Rule` qui applique une `Rule` si le `Predicate<String>` est validée :*
@@ -229,213 +221,67 @@ interface Rule {
 }
 ```
 
-*Ici les tests de Q7* :
-```java
-@Test
-    public void guard() {
-      var uppercase = StreamEditor.createRules("u");
-      var rule = StreamEditor.Rule.guard("foo"::equals, uppercase);
-      assertAll(
-          () -> assertEquals("FOO", rule.rewrite("foo").orElseThrow()),
-          () -> assertEquals("bar", rule.rewrite("bar").orElseThrow()),
-          () -> assertEquals("  foo ", rule.rewrite("  foo ").orElseThrow()),
-          () -> assertEquals("", rule.rewrite("").orElseThrow())
-      );
-    }
-
-    @Test
-    public void guardDelete() {
-      var delete = StreamEditor.createRules("d");
-      var rule = StreamEditor.Rule.guard("foo"::equals, delete);
-      assertAll(
-          () -> assertTrue(rule.rewrite("foo").isEmpty()),
-          () -> assertEquals("bar", rule.rewrite("bar").orElseThrow()),
-          () -> assertEquals("  foo ", rule.rewrite("  foo ").orElseThrow()),
-          () -> assertEquals("", rule.rewrite("").orElseThrow())
-      );
-    }
-
-    @Test
-    public void guardEmptyDelete() {
-      var delete = StreamEditor.createRules("d");
-      var rule = StreamEditor.Rule.guard(String::isEmpty, delete);
-      assertAll(
-          () -> assertEquals("foo", rule.rewrite("foo").orElseThrow()),
-          () -> assertTrue(rule.rewrite("").isEmpty())
-      );
-    }
-
-    @Test
-    public void guardPreconditions() {
-      var rule = StreamEditor.createRules("");
-      assertAll(
-          () -> assertThrows(NullPointerException.class, () -> StreamEditor.Rule.guard(null, rule)),
-          () -> assertThrows(NullPointerException.class, () -> StreamEditor.Rule.guard("foo"::startsWith, null))
-      );
-    }
-    
-    @Test
-    public void createRulesIfUpperCase() {
-      var rule = StreamEditor.createRules("i=foo;u");
-      assertAll(
-          () -> assertEquals("FOO", rule.rewrite("foo").orElseThrow()),
-          () -> assertEquals("bar", rule.rewrite("bar").orElseThrow()),
-          () -> assertEquals("  foo ", rule.rewrite("  foo ").orElseThrow()),
-          () -> assertEquals("", rule.rewrite("").orElseThrow())
-      );
-    }
-
-    @Test
-    public void createRulesIfDelete() {
-      var rule = StreamEditor.createRules("i=foo;d");
-      assertAll(
-          () -> assertTrue(rule.rewrite("foo").isEmpty()),
-          () -> assertEquals("bar", rule.rewrite("bar").orElseThrow()),
-          () -> assertEquals("  foo ", rule.rewrite("  foo ").orElseThrow()),
-          () -> assertEquals("", rule.rewrite("").orElseThrow())
-      );
-    }
-
-    @Test
-    public void createRulesIfStripUppercase() {
-      var rule = StreamEditor.createRules("i= foo ;su");
-      assertAll(
-          () -> assertEquals("FOO", rule.rewrite(" foo ").orElseThrow()),
-          () -> assertEquals(" bar ", rule.rewrite(" bar ").orElseThrow()),
-          () -> assertEquals("foo", rule.rewrite("foo").orElseThrow()),
-          () -> assertEquals("", rule.rewrite("").orElseThrow())
-      );
-    }
-
-    @Test
-    public void createRulesIfEmpty() {
-      var rule = StreamEditor.createRules("i=;");
-      assertAll(
-          () -> assertEquals("foo", rule.rewrite("foo").orElseThrow()),
-          () -> assertEquals("", rule.rewrite("").orElseThrow())
-      );
-    }
-
-    @Test
-    public void createRulesUpperCaseThenIfLowerCase() {
-      var rule = StreamEditor.createRules("ui=HELLO;l");
-      assertAll(
-          () -> assertEquals("FOO", rule.rewrite("foo").orElseThrow()),
-          () -> assertEquals("hello", rule.rewrite("HELLO").orElseThrow()),
-          () -> assertEquals("hello", rule.rewrite("Hello").orElseThrow()),
-          () -> assertEquals("hello", rule.rewrite("hello").orElseThrow()),
-          () -> assertEquals("", rule.rewrite("").orElseThrow())
-      );
-    }
-
-    @Test
-    public void createRulesDeleteThenIfLowerCase() {
-      var rule = StreamEditor.createRules("di=HELLO;l");
-      assertAll(
-          () -> assertTrue(rule.rewrite("foo").isEmpty()),
-          () -> assertTrue(rule.rewrite("HELLO").isEmpty()),
-          () -> assertTrue(rule.rewrite("").isEmpty())
-      );
-    }
-
-    @Test
-    public void ifDeleteSeveraLines() throws IOException {
-      var rule = StreamEditor.createRules("i=foo;d");
-      var editor = new StreamEditor(rule);
-      var reader = new StringReader("""
-          FOO
-          foo
-          bar
-          foo
-          BAZ
-          """);
-      var writer = new CharArrayWriter();
-      try(var bufferedReader = new BufferedReader(reader)) {
-        editor.rewrite(bufferedReader, writer);
-      }
-      assertEquals("""
-          FOO
-          bar
-          BAZ
-          """, writer.toString());
-    }
-
-    @Test
-    public void ifEmptyDeleteSeveraLines() throws IOException {
-      var rule = StreamEditor.createRules("i=;d");
-      var editor = new StreamEditor(rule);
-      var reader = new StringReader("""
-          
-          foo
-          bar
-          
-          """);
-      var writer = new CharArrayWriter();
-      try(var bufferedReader = new BufferedReader(reader)) {
-        editor.rewrite(bufferedReader, writer);
-      }
-      assertEquals("""
-          foo
-          bar
-          """, writer.toString());
-    }
-
-    @Test
-    public void ifLowercaseStripSeveraLines() throws IOException {
-      var rule = StreamEditor.createRules("i= Bar;ls");
-      var editor = new StreamEditor(rule);
-      var reader = new StringReader("""
-          FOO
-           Bar
-            baz  \s
-          """);
-      var writer = new CharArrayWriter();
-      try(var bufferedReader = new BufferedReader(reader)) {
-        editor.rewrite(bufferedReader, writer);
-      }
-      assertEquals("""
-          FOO
-          bar
-            baz  \s
-          """, writer.toString());
-    }
-
-    @Test
-    public void createRulesMalformed() {
-      assertAll(
-          () -> assertThrows(IllegalArgumentException.class, () -> StreamEditor.createRules("i")),
-          () -> assertThrows(IllegalArgumentException.class, () -> StreamEditor.createRules("i=")),
-          () -> assertThrows(IllegalArgumentException.class, () -> StreamEditor.createRules("i;=")),
-          () -> assertThrows(IllegalArgumentException.class, () -> StreamEditor.createRules("i;")),
-          () -> assertThrows(IllegalArgumentException.class, () -> StreamEditor.createRules("ia;=x"))
-      );
-    }
-```
 
 *On modifie ensuite la méthode `createRules` pour qu'elle utilise la nouvelle méthode `guard` :*
 ```java
-public static Rule createRules(String rules) {
-    Objects.requireNonNull(rules);
-    Rule result = Optional::of;
-        
-    var pattern = Pattern.compile("i=(.*);(.*)");
-    var matcher = pattern.matcher(rules);
-    
-    
-    if(matcher.matches()) {
-    
-        var text = matcher.group(1);
-        var rule = matcher.group(2);
-        
-        result = Rule.guard(s -> s.equals(text), createRules(rule));
-
-    } else {
-        
+    // Méthode pour ajouter des règles à une règle existante à partir d'une chaine de caractère
+	private static Rule addRules(Rule providerRule, String rules) {
+		var result = providerRule;
         for (char rule: rules.toCharArray()) {
-            result = result.andThen(createRule(rule));
-        }
-    }
+		    result = result.andThen(createRule(rule));
+	    }
+        return result;
+	}
+	
+    // On utilise une expression régulière pour séparer les règles conditionnelles des règles normales
+	public static Rule createRules(String rules) {
+	  Objects.requireNonNull(rules);
+	  Rule result = Optional::of;
+	     
+	    var pattern = Pattern.compile("(.*)i=(.*);(.*)");
+	    var matcher = pattern.matcher(rules);
+	    
+	    if(matcher.matches()) {
+            // Règles normales
+            var normalRules = matcher.group(1);
+            result = StreamEditor.addRules(result, normalRules);
 
-    return result;
-}
+            // Règle conditionelles
+            var text = matcher.group(2);
+            var conditionalRules = matcher.group(3);
+            	            
+            result = Rule.guard(s -> s.equals(text), createRules(conditionalRules));
+
+	    } else {
+            result = StreamEditor.addRules(result, rules);
+	    }
+		return result;
+	}
+
 ```
+
+8. On souhaite que le test du if puisse être non seulement une String mais aussi une expression régulière.
+
+*On modifie la méthode `createRule` en modifiant la lambda qu'on passe dans `guard` en cherchant si sont paramètre `s` match avec l'expression régulière :*
+```java
+public static Rule createRules(String rules) {
+	  Objects.requireNonNull(rules);
+	  Rule result = Optional::of;
+	     
+	    var pattern = Pattern.compile("(.*)i=(.*);(.*)");
+	    var matcher = pattern.matcher(rules);
+	    
+
+	    if(matcher.matches()) {
+            var previousRules = matcher.group(1);
+            var text = matcher.group(2);
+            var conditionalRules = matcher.group(3);
+            
+            result = StreamEditor.addRules(result, previousRules);
+            result = Rule.guard(s -> Pattern.matches(text, s),createRules(conditionalRules));
+
+	    } else {
+            result = StreamEditor.addRules(result, rules);
+	    }
+		return result;
+	}
