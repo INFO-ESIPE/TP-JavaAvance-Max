@@ -51,8 +51,8 @@ public sealed interface Slice<E> permits Slice.ArraySlice<E>, Slice.SubArraySlic
 		
 		@Override
 		public Slice<E> subSlice(int from, int to) {
-			if(from < 0 || from > size()) throw new IndexOutOfBoundsException("From is not valid");
-			if(to < from || to < 0 || to > size()) throw new IndexOutOfBoundsException("To is not valid");
+			if(from < 0 || from > size()) throw new IndexOutOfBoundsException("'from' value ("+from+") must be > 0 and <" + String.valueOf(size())); 
+			if(to < from || to < 0 || to > size()) throw new IndexOutOfBoundsException("'to' value ("+to+") mist be >= 0 and < " + String.valueOf(size())); 
 			return new SubArraySlice<E>(array, this.from + from, this.from + to);
 		}
 		
