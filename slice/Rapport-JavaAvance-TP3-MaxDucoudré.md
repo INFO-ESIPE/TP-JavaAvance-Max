@@ -143,7 +143,6 @@ Par exemple,
       
 
 Bien sûr, cela veut dire implanter la méthode subSlice(from, to) dans les classes ArraySlice et SubArraySlice.
-Vérifier que les tests JUnit marqués "Q4" passent.
 
 
 *On ajoute la méthode `subSlice` dans l'interface `slice` :*
