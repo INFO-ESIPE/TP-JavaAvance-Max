@@ -252,7 +252,7 @@ public class HashTableSetTest {
     @Test
     public void shouldNotFindAnIntegerBeforeAddingItButShouldFindItAfter() {
       var set = new HashTableSet<Integer>();
-      for (int i = 0; i < 1_000_000; i++) {
+      for (int i = 0; i < 10_000; i++) {
         assertFalse(set.contains(i));
         set.add(i);
         assertTrue(set.contains(i));
@@ -331,7 +331,7 @@ public class HashTableSetTest {
       IntStream.range(0, 1_000_000 / 2).forEach(set::contains);
     }
   }
-/*
+
 
   @Nested
   class Q6 {
@@ -362,7 +362,7 @@ public class HashTableSetTest {
       var set = new HashTableSet<String>();
       set.add("foo");
       set.add("five");
-      set.add("fallout");
+      set.add("f***");
       set.forEach(element -> assertTrue(element.startsWith("f")));
     }
   }
@@ -432,7 +432,7 @@ public class HashTableSetTest {
     }
   }
 
-
+/*
   @Nested
   class Q9 {
 

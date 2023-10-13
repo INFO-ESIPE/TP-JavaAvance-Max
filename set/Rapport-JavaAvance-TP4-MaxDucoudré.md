@@ -97,7 +97,7 @@ public final class HashTableSet<E> {
 3. On cherche maintenant à implanter une méthode forEach qui prend en paramètre une fonction. La méthode forEach parcourt tous les éléments insérés et pour chaque élément, appelle la fonction prise en paramètre avec l'élément courant.
 Quelle doit être la signature de la functional interface prise en paramètre de la méthode forEach ?
 Quel est le nom de la classe du package java.util.function qui a une méthode ayant la même signature ?
-Écrire la méthode forEach.
+Écrire la méthode forEach.  <br>
 
 *La méthode `forEach` vas avoir bestoin d'appliquer une une interface fonctionelle `Consumer` qui prend un paramètre et ne renvois rien.*
 *Voici une implémentation de forEach :*
@@ -115,7 +115,7 @@ Quel est le nom de la classe du package java.util.function qui a une méthode ay
 
 4. On souhaite maintenant ajouter une méthode contains qui renvoie si un objet pris en paramètre est un élément de l'ensemble ou pas, sous forme d'un booléen.
 Expliquer pourquoi nous n'allons pas utiliser forEach pour implanter contains (Il y a deux raisons, une algorithmique et une spécifique à Java).
-Écrire la méthode contains.
+Écrire la méthode contains.  <br>
 
 *Voici une implémentation de contains :*
 ```java
@@ -151,6 +151,68 @@ Expliquer pourquoi nous n'allons pas utiliser forEach pour implanter contains (I
 5. On veut maintenant faire en sorte que la table de hachage se redimensionne toute seule. Pour cela, lors de l'ajout d'un élément, on peut avoir à agrandir la table pour garder comme invariant que la taille du tableau est au moins 2 fois plus grande que le nombre d'éléments.
 Pour agrandir la table, on va créer un nouveau tableau deux fois plus grand et recopier touts les éléments dans ce nouveau tableau à la bonne place. Ensuite, il suffit de remplacer l'ancien tableau par le nouveau.
 Expliquer pourquoi, en plus d'être plus lisible, en termes de performance, l'agrandissement doit se faire dans sa propre méthode.
-Modifier votre implantation pour que la table s'agrandisse dynamiquement.
-Vérifier que les tests marqués "Q5" passent.
-Note : vous pouvez utiliser forEach pour parcourir les éléments de l'ancienne table. 
+Modifier votre implantation pour que la table s'agrandisse dynamiquement.  <br>
+
+*Pour cela, on ajoute une condition au début de chaque add pour vérifier si le nombre d'élément dépasse la moitié de la capacité :*
+```java
+public void add(E element) {
+    Objects.requireNonNull(element);
+    if(size() >= capacity/2) {
+        increaseCapacity();
+    }
+    /* [...] */
+}
+```
+
+*Pour améliorer la vitesse du programme, on vas stocker la taille du tableau dans un champs `size` qu'on incrémente à chaque plutôt que de le recalculer à chaque fois :*
+```java
+private int size = 0;
+/* [...] */
+public void add(E element) {
+    Objects.requireNonNull(element);
+    if(size >= capacity/2) {
+        increaseCapacity();
+    }
+    /* [...] */
+    size++;
+    /* [...] */
+}
+```
+*La méthode `increaseCapacity` vas doubler la capacité du tableau en en créant un nouveau comme ceci :* 
+```java
+	private void increaseCapacity() {
+		Entry<E>[] newEntries = new Entry[capacity*2];
+		
+		forEach(element -> {
+			int index = hash(element);
+			newEntries[index] = entries[index];
+		});
+		
+		capacity *= 2;
+		entries = newEntries;
+	}
+```
+
+
+6. L'implantation actuelle a un problème : même si on n'ajoute que des String lorsque l'on utilise forEach, l'utilisateur va probablement devoir faire des cast parce que les éléments envoyés par forEach sont typés Object. <br>
+
+Rappeler pourquoi en Java, il n'est pas possible de créer un tableau de type paramétré ? Quel est le work around ? Pourquoi celui-ci génère-t-il un warning ? Et dans quel cas et comment peut on supprimer ce warning ?  <br>
+
+*En java, il n'est pas possible de créer des tableaux de type paramétré car le type de l'objet passé en paramètre n'existe pas encore à l'exécution*
+
+7. En fait, la signature de la méthode forEach que vous avez écrite n'est pas la bonne. En effet, forEach appelle la lambda avec des éléments de type E, donc la fonction peut prendre en paramètre des valeurs qui sont des super-types de E. <br>
+
+*On modifie la signature de la méthode `forEach` :*
+```java
+public void forEach(Consumer<? super E> action) {
+    /* [Le code reste inchangé] */
+}
+```
+
+8. On souhaite maintenant écrire une méthode addAll qui permet d'ajouter tous les éléments d'un HashTableSet dans le HashTableSet courant. <br> 
+```java
+	public void addAll(HashTableSet<? extends E> hashTableSet) {
+		hashTableSet.forEach(this::add);
+	}
+```
+

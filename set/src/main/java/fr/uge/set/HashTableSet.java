@@ -8,6 +8,7 @@ public final class HashTableSet<E> {
 
 	private final static int DEFAULT_CAPACITY = 16;
 	private int capacity = DEFAULT_CAPACITY;
+	private int size = 0;
 	
 	@SuppressWarnings("unchecked")
 	private Entry<E>[] entries = new Entry[DEFAULT_CAPACITY];
@@ -25,30 +26,23 @@ public final class HashTableSet<E> {
 	}
 	
 	private void increaseCapacity() {
-		capacity *= 2;
-   
-    	@SuppressWarnings("unchecked")
-		Entry<E>[] newEntries = new Entry[capacity];
+		Entry<E>[] newEntries = new Entry[capacity*2];
+		
 		forEach(element -> {
-			
 			int index = hash(element);
-			var entry = entries[index];
-	        while (entry != null) {
-	            if (entry.data.equals(element)) {
-	                return;
-	            }
-	            entry = entry.next();
-	        }
+			newEntries[index] = entries[index];
 		});
 		
+		capacity *= 2;
 		entries = newEntries;
 	}
 
 	public void add(E element) {
 		Objects.requireNonNull(element);
-        //if(size()+1 >= capacity/2) {
-        	//increaseCapacity();
-        //}
+		//System.out.println("Number of elements :" + size() + " | Capacity :" + capacity);
+        if(size >= capacity/2) {
+        	increaseCapacity();
+        }
         
 		int index = hash(element);
         var entry = entries[index];
@@ -58,11 +52,13 @@ public final class HashTableSet<E> {
             }
             entry = entry.next();
         }
+        size++;
         entries[index] = new Entry<>(entries[index], element);
-        
 	}
 	
+
 	public int size() {
+		/*
         int size = 0;
         for (Entry<E> entry : entries) {
             while (entry != null) {
@@ -70,10 +66,10 @@ public final class HashTableSet<E> {
                 entry = entry.next();
             }
         }
+        */
         return size;
     }
-	
-	public void forEach(Consumer<E> action) {
+	public void forEach(Consumer<? super E> action) {
 		Objects.requireNonNull(action);
 		Arrays.stream(entries).forEach(entry -> {
 			while (entry != null) {
@@ -86,6 +82,7 @@ public final class HashTableSet<E> {
 	private int hash(E element) {
 		return Math.abs(element.hashCode() & capacity-1);
 	}
+
 	
 	public boolean contains(E element) {
 		Objects.requireNonNull(element);
@@ -102,6 +99,29 @@ public final class HashTableSet<E> {
             entry = entry.next();
         }
         return false;
+	}
+	
+	public void addAll(HashTableSet<? extends E> hashTableSet) {
+		hashTableSet.forEach(this::add);
+	}
+	
+
+	
+
+	@Override
+	public String toString() {
+		var sb = new StringBuilder();
+		for(int i = 0; i < capacity; i++) {
+			sb.append(i + ": ");
+			if(entries[i] == null) {
+				sb.append("[null]");
+			} else {
+				for(var entry = entries[i]; entry != null; entry = entry.next()) {
+					sb.append(" -> " + entry.toString());
+				}
+			}
+		}
+		return sb.toString();
 	}
 
 	
