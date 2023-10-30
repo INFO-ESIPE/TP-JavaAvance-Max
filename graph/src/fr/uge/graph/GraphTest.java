@@ -70,7 +70,7 @@ public class GraphTest {
     <T> Graph<T> createGraph(int nodeCount);
   }
   static Stream<GraphFactory> graphFactoryProvider() {
-    return Stream.of(Graph::createMatrixGraph /*, Graph::createNodeMapGraph*/);
+    return Stream.of(Graph::createMatrixGraph , Graph::createNodeMapGraph);
   }
   static Stream<Arguments> graphFactoryTwoProviders() {
     return graphFactoryProvider().flatMap(p1 -> graphFactoryProvider().map(p2 -> Arguments.of(p1, p2)));
@@ -485,7 +485,7 @@ public class GraphTest {
     }
   }
 
-/*
+
   @Nested
   public class Q7 {
 
@@ -715,5 +715,5 @@ public class GraphTest {
           .noneMatch(m -> m.accessFlags().contains(AccessFlag.ABSTRACT)));
     }
   }
-  */
+  
 }

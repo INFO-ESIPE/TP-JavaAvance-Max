@@ -42,39 +42,56 @@ final class MatrixGraph<T> implements Graph<T> {
 				Optional.empty();
 	}
 	
-	public Iterator<Integer> neighborIterator(int src) {
-		var neighbors = new ArrayList<Integer>();
-
-		for(int j  = 0; j < nodeCount; j++) {
-			if(getWeight(src, j).isPresent()) {
-				neighbors.
-			}
-			
+	private class NeighborIterator implements Iterator<Integer> {
+		private int next = -1;
+		private int current = -1;
+		private final int src;
+		
+		public NeighborIterator(int src) {
+			Objects.checkIndex(src, nodeCount);
+			this.src = src;
+			findNext();
 		}
 		
-		return new Iterator<Integer>() {
-			int currentDst = 0;
-			
-			
-			@Override
-			public boolean hasNext() {
-				return currentDst < nodeCount;
+		@Override
+		public boolean hasNext() {
+			return next != -1;
+		}
+		
+		@Override
+		public Integer next() {
+		
+			if(!hasNext()) {
+				throw new NoSuchElementException();
 			}
-
-			@Override
-			public Integer next() {
-				if(!hasNext() || nodeCount == 0) throw new NoSuchElementException();
-				int nowDst = currentDst;
-				for(; getWeight(src, nowDst).isEmpty(); nowDst++);
-
-				for(currentDst++; getWeight(src, currentDst).isEmpty(); currentDst++);
-				currentDst++;
-				return nowDst;
+			current = next;
+			findNext();
+			return current;
+		}
+		
+		@Override
+		public void remove() {
+			if(current == -1) {
+				throw new IllegalStateException();
 			}
-	
-		};
+			array[nodeCount * src + current] = null;
+			current = -1;
+		}
+		
+		private void findNext() {
+			next = -1;
+			for(int i = current + 1; i < nodeCount(); i++) {
+				if(getWeight(src, i).isPresent()) {
+					next = i;
+					return;
+				}
+			}
+		}
 	}
-
+	
+	public Iterator<Integer> neighborIterator(int src) {
+		return new NeighborIterator(src);
+	}
 
 
 }

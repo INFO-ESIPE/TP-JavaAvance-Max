@@ -1,13 +1,15 @@
 package fr.uge.fifo;
 
 import java.util.Arrays;
+import java.util.AbstractQueue;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
-public class Fifo<E> implements Iterable<E> {
+public class Fifo<E> extends AbstractQueue<E>  implements Iterable<E>, Queue<E>{
 	private final static int DEFAULT_CAPACITY = 16;
 	private int capacity;
 	private int size = 0;
@@ -51,7 +53,7 @@ public class Fifo<E> implements Iterable<E> {
 		capacity *= 2;
 	}
 
-	public void offer(E element) {
+	public boolean offer(E element) {
 		Objects.requireNonNull(element);
 		// if(size >= capacity) throw new IllegalStateException("The FIFO is full !");
 		if (size * 2 >= capacity) {
@@ -64,6 +66,7 @@ public class Fifo<E> implements Iterable<E> {
 			tail = 0;
 		}
 		size++;
+		return true;
 	}
 
 	@SuppressWarnings("unchecked")

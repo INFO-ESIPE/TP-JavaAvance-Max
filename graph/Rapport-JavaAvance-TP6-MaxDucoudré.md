@@ -167,28 +167,180 @@ Note : ça pourrait être une bonne idée de calculer quel est le prochain arc v
 <br>
 
 *Un itérateur permet d'itérer les éléments d'une collection. Il est composé d'une méthode `hasNext` pour savoir s'il y a un prochain élément et d'une méthode `next` pour accéder à l'élément suivant.*  
-*Pour générer un itérateur, on ajoute la méthode `neighborsIterator` dans l'interface `MatrixGraph` qui vas implémenter l'interface Iterator<Integer>:*
+*Pour générer un itérateur, on ajoute la méthode `neighborsIterator` dans `MatrixGraph`. Cette méthode vas créer un itérateur permettant de récupérer tous les index "destination" à partir d'un index "source":*
 ```java
 public final MatrixGraph<T> {
     /* [...] */
-    public Iterator<Integer> neighborIterator(int src) {
-		return new Iterator<Integer>() {
-			int currentDst = -1
-			
-			@Override
-			public boolean hasNext() {
-				return currentDst < nodeCount - 1;
-			}
 
-			@Override
-			public Integer next() {
-				if(!hasNext()) throw new NoSuchElementException();
-				currentDst++;
-				return currentDst;
-			}
+	public Iterator<Integer> neighborIterator(int src) {
+		return new NeighborIterator(src);
+	}
 	
-		};
+	private class NeighborIterator implements Iterator<Integer> {
+		private int next = -1;
+		private int current = -1;
+		private final int src;
+		
+		public NeighborIterator(int src) {
+			Objects.checkIndex(src, nodeCount);
+			this.src = src;
+			findNext();
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return next != -1;
+		}
+		
+		@Override
+		public Integer next() {
+			
+	
+			if(!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			current = next;
+			findNext();
+			return current;
+		}
+		
+		private void findNext() {
+			next = -1;
+			for(int i = current + 1; i < nodeCount(); i++) {
+				if(getWeight(src, i).isPresent()) {
+					next = i;
+					return;
+				}
+			}
+		}
 	}
 }
 ```
 
+7. Expliquer le fonctionnement précis de la méthode remove de l'interface Iterator.
+Implanter la méthode remove de l'itérateur. <br>
+
+*La méthode `remove` retire l'élément renvoyé par next() de la collection.* 
+
+*On implémente la méthode `remove` dans `NeighborIterator`. Pour cela, il suffit de placer l'élément à l'index de `current` à `null`:*
+```java
+public final MatrixGraph<T> {
+    /* [...] */
+	private class NeighborIterator implements Iterator<Integer> {
+		/* [...] */
+		@Override
+		public void remove() {
+			if(current == -1) {
+				throw new IllegalStateException();
+			}
+			array[nodeCount * src + current] = null;
+			current = -1;
+		}
+	}
+}
+```
+
+8. On souhaite ajouter une méthode forEachEdge qui prend en paramètre un index d'un nœud et une fonction qui est appel cette fonction avec chaque arc sortant de ce nœud.
+Pour cela, nous allons, dans un premier temps, définir le type Graph.Edge à l'intérieur de l'interface Graph. Un Graph.Edge est définie par un entier src, un entier dst et un poids weight.
+<br>
+
+*On ajoute le record `Edge` dans l'interface `Graph` :*
+```java
+public sealed interface Graph<T> permits MatrixGraph<T> {
+	/* [...] */
+   record Edge<T>(int src, int dst, T weight) {
+	   public Edge {
+		   Objects.requireNonNull(weight);
+	   }
+   }
+}
+```
+*Puis on implémente la méthode `forEachEdge` dans directement dans l'interface `Graph` :*
+```java
+public sealed interface Graph<T> permits MatrixGraph<T> {
+	/* [...] */
+	default void forEachEdge(int src, Consumer<? super Edge<T>> consumer) {
+		Objects.requireNonNull(consumer);
+		Objects.checkIndex(src, nodeCount());
+		
+		for(int i = 0; i < nodeCount(); i++) {
+			var weight = getWeight(src, i);
+			if(weight.isPresent()) {
+				consumer.accept(new Edge<T>(src, i, weight.get()));
+			}
+		}	
+	}
+}
+```
+
+9. Enfin, on souhaite écrire une méthode edges qui renvoie tous les arcs du graphe sous forme d'un stream. L'idée ici n'est pas de réimplanter son propre stream (c'est prévu dans la suite du cours) mais de créer un stream sur tous les nœuds (sous forme d'entier) puis pour chaque nœud de renvoyer tous les arcs en réutilisant la méthode forEachEdge que l'on vient d'écrire. <br>
+
+*On implémente la méthode `edges` dans directement dans l'interface `Graph` :*
+```java
+public sealed interface Graph<T> permits MatrixGraph<T> {
+	/* [...] */
+    default Stream<Edge<T>> edges() {
+	   var edges = new ArrayList<Edge<T>>();
+	   for(int i = 0; i < nodeCount(); i++) {
+		   forEachEdge(i, edges::add);
+	   }
+	   return edges.stream();
+    }
+}
+```
+
+## Exercice 3 - NodeMapGraph
+
+On souhaite fournir une implantation de l'interface Graph par table de hachage qui pour chaque nœud permet de stocker l'ensemble des arcs sortant. Pour un nœud donné, on utilise une table de hachage qui a un nœud destination associe le poids de l'arc. Si un nœud destination n'est pas dans la table de hachage cela veut dire qu'il n'y a pas d'arc entre le nœud source et le nœud destination.
+Le graphe est représenté par un tableau dont chaque case correspond à un nœud, donc chaque case contient une table de hachage qui associe à un nœud destination le poids de l'arc correspondant.
+
+Les tests unitaires sont les mêmes que précédemment car NodeMapGraph est une autre implantation de l'interface Graph, il suffit de dé-commenter la méthode référence dans graphFactoryProvider.
+
+
+1. Écrire dans l'interface Graph la méthode createNodeMapGraph et implanter la classe NodeMapGraph (toujours non publique).
+Note : chaque méthode est sensée ne pas prendre plus de 2 ou 3 lignes, tests des préconditions compris.
+<br>
+
+*On ajoute la méthode `createNodeMapGraph` dans l'interface `Graph` :*
+```java
+public sealed interface Graph<T> permits MatrixGraph<T>, NodeMapGraph<T> {
+	/* [...] */
+	public static <T> Graph<T> createNodeMapGraph(int nodeCount) {
+		return new NodeMapGraph<T>(nodeCount);
+	}
+}
+```
+
+*Puis on implémente la classe `NodeMapGraph` :*
+```java
+	public final class NodeMapGraph<T> implements Graph<T> {
+		private final Map<Integer, Map<Integer, T>> map;
+	@Override
+	public int nodeCount() {
+		return map.size();
+	}
+
+	@Override
+	public void addEdge(int src, int dst, T weight) {
+		Objects.requireNonNull(weight);
+		Objects.checkIndex(src, nodeCount());
+		Objects.checkIndex(dst, nodeCount());
+		map.computeIfAbsent(src, k -> new HashMap<>()).put(dst, weight);
+	}
+
+	@Override
+	public Optional<T> getWeight(int src, int dst) {
+		Objects.checkIndex(src, nodeCount());
+		Objects.checkIndex(dst, nodeCount());
+		return Optional.ofNullable(map.getOrDefault(src, Collections.emptyMap()).get(dst));
+	}
+
+
+	@Override
+	public Iterator<Integer> neighborIterator(int src) {
+		return null;
+	}
+	
+
+	}
+```

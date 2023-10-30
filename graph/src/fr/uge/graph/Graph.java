@@ -1,14 +1,18 @@
 package fr.uge.graph;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 
 /**
  * An oriented graph with values on edges and not on nodes.
  */
-public sealed interface Graph<T> permits MatrixGraph<T> {
+public sealed interface Graph<T> permits MatrixGraph<T>, NodeMapGraph<T> {
   /**
    * Returns the number of nodes of this graph.
    * @return the number of nodes of this graph.
@@ -94,7 +98,12 @@ public sealed interface Graph<T> permits MatrixGraph<T> {
    * @param weight the weight associated to the edge.
    * @param <T> the type of the weight
    */
-  // Edge
+   record Edge<T>(int src, int dst, T weight) {
+	   public Edge {
+		   Objects.requireNonNull(weight);
+		   if(src < 0 || dst < 0) throw new IllegalArgumentException();
+	   }
+   }
 
   /**
    * Call the consumer for each edge associated to the source node.
@@ -104,7 +113,17 @@ public sealed interface Graph<T> permits MatrixGraph<T> {
    * @throws NullPointerException if consumer is null.
    * @throws IndexOutOfBoundsException if src is not a valid index for a node.
    */
-  // forEachEdge(src, function)
+	default void forEachEdge(int src, Consumer<? super Edge<T>> consumer) {
+		Objects.requireNonNull(consumer);
+		Objects.checkIndex(src, nodeCount());
+		
+		for(int i = 0; i < nodeCount(); i++) {
+			var weight = getWeight(src, i);
+			if(weight.isPresent()) {
+				consumer.accept(new Edge<T>(src, i, weight.get()));
+			}
+		}	
+	}
 
   // Q9
 
@@ -113,7 +132,13 @@ public sealed interface Graph<T> permits MatrixGraph<T> {
    *
    * @return all the edges of the graph that have a value in any order.
    */
-  //edges()
+   default Stream<Edge<T>> edges() {
+	   var edges = new ArrayList<Edge<T>>();
+	   for(int i = 0; i < nodeCount(); i++) {
+		   forEachEdge(i, edges::add);
+	   }
+	   return edges.stream();
+   }
 
   /**
    * Create a graph implementation based on a node map.
@@ -122,5 +147,6 @@ public sealed interface Graph<T> permits MatrixGraph<T> {
    * @return a new graph implementation
    * @param <T> type of the edge weight
    */
-  //createNodeMapGraph(nodeCount)
-}
+	public static <T> Graph<T> createNodeMapGraph(int nodeCount) {
+		return new NodeMapGraph<T>(nodeCount);
+	}}

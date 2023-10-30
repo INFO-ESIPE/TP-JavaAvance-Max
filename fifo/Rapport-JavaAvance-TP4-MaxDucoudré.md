@@ -247,10 +247,25 @@ public class Fifo<E> {
 
 9. On souhaite que le tableau circulaire soit parcourable en utilisant une boucle for-each-in. Quelle interface doit implanter la classe Fifo ? <br>
 
-*Il faut implanter l'interface `Iterable` pour pouvoir utiliser une boucle for-each-in. Pour cela il faut au moins que la méthode `Iterator` soit implémentée.`*
+*Il faut implanter l'interface `Iterable` pour pouvoir utiliser une boucle for-each-in. Pour cela il faut au moins que la méthode `iterator` soit implémentée.`*
 ```java
 public class Fifo<E> implements Iterable<E> {
     /* [...] */
-
 }
 ```
+
+
+10. Enfin, il existe déjà en Java une interface pour les files d'éléments, java.util.Queue, on souhaite maintenant que notre implantation de tableau circulaire Fifo implante cette interface. <br>
+
+
+*On modifie la classe `Fifo` pour la faire implémenter `Queue` et hériter de `AbstractQueue` et on modifie la valeur de retour de `offer` pour être cohérent avec l'interface Queue. (Ici, `offer` vas tout le temps renvoyer `true` car notre implémentation ne permet pas de refuser un élément) :*
+```java
+public class Fifo<E> extends AbstractQueue<E>  implements Iterable<E>, Queue<E>{
+	/* [...] */
+	public boolean offer(E element) {
+		/* [...] */
+		return true;
+	}
+}
+```
+

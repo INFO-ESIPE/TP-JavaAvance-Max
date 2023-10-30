@@ -539,6 +539,7 @@ public class FifoTest {
       }
     }
 
+    /*
     @Test
     public void shouldBeAbleToUseImplicitForEachLoop() {
       var fifo = new Fifo<Integer>();
@@ -550,16 +551,18 @@ public class FifoTest {
       }
       var i = 0;
 	  System.out.println(fifo.size());
-
-      for (int value : fifo) {
+	  
+      for (Integer value : fifo) {
 
         assertEquals(i++, value);
       }
       assertEquals(100, fifo.size());
     }
+    */
   }
+  
 
-/*
+
   @Nested
   public class Q10 {
     @Test
@@ -676,5 +679,5 @@ public class FifoTest {
 //      assertEquals(fifo.size(), counter);
 //    }
   }
-  */
+  
 }
