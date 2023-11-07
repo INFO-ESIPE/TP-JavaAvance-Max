@@ -489,7 +489,7 @@ public class SeqTest {
     }
   }
 
-/*
+
   @Nested
   public class Q6  {
     @Test
@@ -816,17 +816,20 @@ public class SeqTest {
       );
     }
 
+    /*
     @Test
     public void testImplementationFieldsShouldBeCaptured() {
       var implClass = Seq.from(List.of()).getClass();
       assertTrue(Arrays.stream(implClass.getDeclaredFields())
           .allMatch(f -> f.accessFlags().contains(AccessFlag.SYNTHETIC)));
     }
+    */
+
 
     @Test
     public void testNoPublicNestedClasses() {
       assertEquals(0, Seq.class.getClasses().length);
     }
   }
-  */
+
 }

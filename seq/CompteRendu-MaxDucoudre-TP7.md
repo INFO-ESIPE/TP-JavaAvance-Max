@@ -1,4 +1,4 @@
-# TP7 Java Avancé - [ Liste persistante (fonctionnelle) ](https://monge.univ-mlv.fr/ens/IR/IR2/2023-2024/JavaAvance/td07.php)
+# TP7 Java Avancé - [ Liste persistante (fonctionnelle) ](https://monge.univ-mlv.fr/ens/IR/IR2/2023-2024/JavaAvance/td09.php)
 #### Max Ducoudré - INFO2
 
 
@@ -162,4 +162,115 @@ Vérifier que les tests marqués "Q5" passent.
 <br>
 
 
+*On ajoute une méthode privée à la classe `SeqImpl` qui renvoie un `Spliterator` qui utilise la liste de la classe. Avec ce `SplitIterator`, on vas ensuite pouvoir créer la méthode `stream` qui utilisera `StreamSupport`:*
+```java
+final class SeqImpl<E, T> implements Seq<E> {
 
+	/* [...] */
+
+	@Override
+	public Stream<E> stream() {
+		var spliterator = spliterator(0, list.size());
+		return StreamSupport.stream(spliterator, false);
+	}
+	
+	private Spliterator<E> spliterator(int start, int end) {
+		return new Spliterator<E>() {
+			private int i = start;
+			@Override
+			public Spliterator<E> trySplit() { 
+				var middle = (i + end) >>> 1;
+				if(middle == i) {
+					return null;
+				}
+				var spliterator = spliterator(i, middle);
+				i = middle;
+				return spliterator;
+			}
+			
+			@Override
+			public boolean tryAdvance(Consumer<? super E> consumer) {
+				Objects.requireNonNull(consumer);
+				if (i < end) {
+					consumer.accept(get(i++));
+					return true;
+				}
+				return false;
+			}
+			
+			@Override
+			public int characteristics() { 
+				return ORDERED | IMMUTABLE; 
+			}
+			
+			@Override
+			public long estimateSize() { 
+				return end-i; 
+			}
+		};
+	}
+}
+```
+
+6.  On souhaite ajouter une méthode of à l'interface Seq permettant d'initialiser un Seq à partir de valeurs séparées par des virgules.
+Par exemple, on pourra créer le Seq de la question 2 comme ceci
+         var seq = Seq.of(78, 56, 34, 23);
+       
+
+Vérifier que les tests marqués "Q6" passent.
+Note : si vous avez des warnings, vous avez un problème.
+Note 2 : si vous pensez un @SuppressWarnings, pensez plus fort !
+<br>
+
+*On ajoute une méthode statique à l'interface Seq qui vas prendre en argument un nombre variable d'éléments de type `E` et qui vas renvoyer un `Seq` de ces éléments :*
+```java
+public interface Seq<E> {
+	
+	/* [...] */
+	
+	public static <E> Seq<E> of(E ... elements) {
+		return from(List.of(elements));
+	}
+}
+```
+
+7. On souhaite faire en sorte que l'on puisse utiliser la boucle for-each-in sur un Seq.
+Par exemple,
+        for(var value : seq) {
+          System.out.println(value);
+        }
+      
+Modifier votre code en conséquence.
+Vérifier que les tests marqués "Q7" passent.
+<br>
+
+*Pour utiliser une boucle for-each-in, il faut que l'interface hérite d'`Iterable`. On écrit ensuite une méthode par défaut dans `Seq` qui génère un `Iterator` :*
+```java
+public interface Seq<E> extends Iterable<E> {
+	/* [...] */
+
+	default Iterator<E> iterator() {
+		return new Iterator<E>() {
+			private int i = 0;
+			@Override
+			public boolean hasNext() {
+				return i < size();
+			}
+
+			@Override
+			public E next() {
+				if(!hasNext()) throw new NoSuchElementException();
+				return get(i++);
+			}
+		};
+	}
+}
+```
+
+8. À la question 5, on a vu comment cacher la déclaration d'une classe à l'intérieur d'une méthode, on peut faire la même chose avec la classe SeqImpl et déclarer l'implantation sous forme d'une classe anonyme à l'intérieur d'une méthode dans l'interface.
+Quelle doit être la visibilité de la méthode contenant la déclaration de la classe anonyme d'implantation ?
+Modifier votre code pour que l'implantation de l'interface Seq soit dans l'interface Seq sans que cela soit visible de l'extérieur.
+Vérifier que les tests marqués "Q8" passent.
+<br>
+
+*La visibilité de la méthode contenant la déclaration de la classe anonyme d'implantation doit être `public` pour que l'utilisateur puisse l'instancier. Néamoins, l'implantation de cette classe doit rester en private pour que personne ne puisse la créer directement.* 
