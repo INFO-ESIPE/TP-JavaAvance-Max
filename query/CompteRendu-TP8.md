@@ -109,6 +109,7 @@ public sealed interface Query<E> {
 Note : il existe une classe java.util.AbstractList qui peut vous servir de base pour implanter la liste paresseuse demandée.
 Attention : vous veillerez à ne pas demander plusieurs fois si un même élément est présent, une seule fois devrait suffire.
 Écrire la méthode toLazyList.
+<br>
 
 *La méthode `toLazyList` renvoie une AbstractList qui utilisera un cache et un iterator pour calculer les valeur au fur et à mesure des appels à `get` et `size` :*
 
@@ -159,3 +160,65 @@ public sealed interface Query<E> {
 	}	
 }
 ```
+
+
+5. On souhaite pouvoir créer une Query en utilisant une nouvelle méthode fromIterable qui prend un Iterable en paramètre. Dans ce cas, tous les éléments de l'Iterable sont considérés comme présents.
+Note : une java.util.List est un Iterable et Iterable possède une méthode spliterator().
+Écrire la méthode fromIterable et modifier le code des méthodes existantes si nécessaire.
+<br>
+
+*Au lieu de stocker une `List` dans `QueryImpl`, on vas stocker un `Iterable` et utiliser son splititerator pour générer les streams :*
+
+```java
+public sealed interface Query<E> {
+
+	/* [...] */
+	public static <E> Query<E> fromIterable(Iterable<? extends E> iterable) {
+		Objects.requireNonNull(iterable);
+		var list = new ArrayList<E>();
+		return new QueryImpl<E, E>(iterable,(e) -> Optional.of(e));
+	}
+	
+	
+	final class QueryImpl<E, T> implements Query<T> {
+		private final Iterable<? extends E> elements;
+
+		/* [...] */
+
+		private QueryImpl(Iterable<? extends E> elements, Function<? super E, ? extends Optional<? extends T>> filter) {
+			Objects.requireNonNull(elements);
+			Objects.requireNonNull(filter);
+			this.elements = elements;
+			this.filter = filter;
+		}
+
+
+		@Override
+		public Stream<T> toStream() {
+			return StreamSupport.stream(elements.spliterator(), false)
+					.flatMap(e -> filter.apply(e).stream());
+		}
+
+		
+		@Override
+		public String toString() {
+			return toStream()
+					.map(e -> e.toString())
+					.collect(Collectors.joining(" |> "));
+		}
+
+		@Override
+		public List<T> toList() {
+			return toStream().toList();
+		}
+
+
+
+	}
+}
+```
+
+
+6. On souhaite écrire une méthode filter qui permet de sélectionner uniquement les éléments pour lesquels un appel à la fonction prise en paramètre de filter renvoie vrai.
+<br>
+

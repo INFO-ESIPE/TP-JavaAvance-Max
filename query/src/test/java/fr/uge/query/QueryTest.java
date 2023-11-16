@@ -590,7 +590,7 @@ public class QueryTest {
       );
     }
   }
-/*
+
 
   @Nested
   class Q5 {
@@ -743,7 +743,7 @@ public class QueryTest {
     }
   }
 
-
+/*
   @Nested
   class Q7 {
     @Test
