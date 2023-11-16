@@ -1,13 +1,14 @@
 package fr.uge.query;
 
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -19,17 +20,16 @@ public sealed interface Query<E> {
 
 	public static <E, T> Query<T> fromList(
 			List<E> list, 
-			Function<? super E, ? extends Optional<? extends T>> filter) {
+			Function<? super E, ? extends Optional<? extends T>> mapper) {
 
 		Objects.requireNonNull(list);
-		Objects.requireNonNull(filter);
+		Objects.requireNonNull(mapper);
 
-		return new QueryImpl<E, T>(list, filter);
+		return new QueryImpl<E, T>(list, mapper);
 	}
 	
 	public static <E> Query<E> fromIterable(Iterable<? extends E> iterable) {
 		Objects.requireNonNull(iterable);
-		var list = new ArrayList<E>();
 		return new QueryImpl<E, E>(iterable, Optional::of);
 	}
 	
@@ -37,24 +37,21 @@ public sealed interface Query<E> {
 	public List<E> toList();
 	public Stream<E> toStream();
 	public List<E> toLazyList();
-	public Query<E> filter(Predicate<E> filter);
-
+	public Query<E> filter(Predicate<? super E> filter);
+	public <R> Query<R> map(Function<? super E, ? extends R> function);
+	public <U> U reduce(U identity, BiFunction<U, ? super E, U> accumulator);
+	
 	final class QueryImpl<E, T> implements Query<T> {
 		private final Iterable<? extends E> elements;
 		private final Function<? super E, ? extends Optional<? extends T>> mapper;
-		private final Predicate<E> filter;
-
-		private QueryImpl(Iterable<? extends E> elements, Function<? super E, ? extends Optional<? extends T>> mapper) {
-			this(elements, mapper, (e) -> true);
-		}
+		private final List<Predicate<? super T>> filters = new ArrayList<>();
 		
-		private QueryImpl(Iterable<? extends E> elements, Function<? super E, ? extends Optional<? extends T>> mapper, Predicate<E> filter ) {
+		
+		private QueryImpl(Iterable<? extends E> elements, Function<? super E, ? extends Optional<? extends T>> mapper) {
 			Objects.requireNonNull(elements);
 			Objects.requireNonNull(mapper);
-			Objects.requireNonNull(filter);
 			this.elements = elements;
 			this.mapper = mapper;
-			this.filter = filter;
 		}
 
 		@Override
@@ -72,8 +69,15 @@ public sealed interface Query<E> {
 		@Override
 		public Stream<T> toStream() {
 			return StreamSupport.stream(elements.spliterator(), false)
-					.flatMap(e -> mapper.apply(e).stream());
+				.flatMap(e -> {				
+					var optional = mapper.apply(e);
+					if(optional.isPresent() && filters.stream().allMatch(f -> f.test(optional.get()))) {
+							return optional.stream();
+					}
+					return Stream.<T>empty();
+				});
 		}
+		
 		
 
 		@Override
@@ -105,17 +109,32 @@ public sealed interface Query<E> {
 						mapper.apply(iterator.next())
 							.ifPresent(list::add);
 					}
-					
 					return list.size();
 				}
 			};
 		}
 
 		@Override
-		public Query<E> filter(Predicate<E> filter) {
+		public Query<T> filter(Predicate<? super T> filter) {
 			Objects.requireNonNull(filter);
-			this.filter = this.filter.and(filter);
+			filters.add(filter);
 			return this;
+		}
+
+		@Override
+		public <R> Query<R> map(Function<? super T, ? extends R> function) {
+			Objects.requireNonNull(function);
+			return new QueryImpl<E, R>(elements, mapper.andThen(o -> o.map(function)));
+		}
+
+		@Override
+		public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+			Objects.requireNonNull(accumulator);
+			var result = identity;
+			for(var e : toList()) {
+				 result = accumulator.apply(result, e);
+			}
+			return result;
 		}
 	}	
 }

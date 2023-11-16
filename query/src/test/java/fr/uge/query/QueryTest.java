@@ -743,7 +743,7 @@ public class QueryTest {
     }
   }
 
-/*
+
   @Nested
   class Q7 {
     @Test
@@ -832,6 +832,7 @@ public class QueryTest {
     }
   }
 
+  
   @Nested
   class Q8 {
 
@@ -889,5 +890,5 @@ public class QueryTest {
       assertThrows(NullPointerException.class, () -> query.reduce(0, null));
     }
   }
-  */
+  
 }

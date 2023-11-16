@@ -18,31 +18,31 @@ public sealed interface Query<E> {
 	
 	public static <E, T> Query<T> fromList(
 			List<E> list, 
-			Function<? super E, ? extends Optional<? extends T>> filter) {
+			Function<? super E, ? extends Optional<? extends T>> mapper) {
 		
 		Objects.requireNonNull(list);
-		Objects.requireNonNull(filter);
+		Objects.requireNonNull(mapper);
 		
-		return new QueryImpl<E, T>(list, filter);
+		return new QueryImpl<E, T>(list, mapper);
 	}
 	
 	final class QueryImpl<E, T> implements Query<T> {
 		private final List<E> elements;
-		private final Function<? super E, ? extends Optional<? extends T>> filter;
+		private final Function<? super E, ? extends Optional<? extends T>> mapper;
 		
-		private QueryImpl(List<E> elements, Function<? super E, ? extends Optional<? extends T>> filter) {
+		private QueryImpl(List<E> elements, Function<? super E, ? extends Optional<? extends T>> mapper) {
 			Objects.requireNonNull(elements);
-			Objects.requireNonNull(filter);
+			Objects.requireNonNull(mapper);
 			this.elements = Collections.unmodifiableList(elements);
-			this.filter = filter;
+			this.mapper = mapper;
 		}
 		
 		
 		@Override
 		public String toString() {
 			return Arrays.stream(elements)
-					.filter(e -> filter.apply(e).isPresent())
-					.map(e -> filter.apply(e).get().toString())
+					.mapper(e -> mapper.apply(e).isPresent())
+					.map(e -> mapper.apply(e).get().toString())
 					.collect(Collectors.joining(" |> "));
 		}
 	}
@@ -73,7 +73,7 @@ public sealed interface Query<E> {
 		@Override
 		public List<T> toList() {
 			var list = new ArrayList<T>();
-			elements.forEach(e -> filter.apply(e).ifPresent(list::add));
+			elements.forEach(e -> mapper.apply(e).ifPresent(list::add));
 			return Collections.unmodifiableList(list);
 		}
 	}	
@@ -98,7 +98,7 @@ public sealed interface Query<E> {
 		
 		@Override
 		public Stream<T> toStream() {
-			return elements.stream().flatMap(e -> filter.apply(e).stream());
+			return elements.stream().flatMap(e -> mapper.apply(e).stream());
 
 		}
 	}	
@@ -134,7 +134,7 @@ public sealed interface Query<E> {
 				public T get(int index) {	
 				    if (index >= list.size()) {
 						while (iterator.hasNext()) {
-							filter.apply(iterator.next())
+							mapper.apply(iterator.next())
 								.ifPresent(list::add);
 							if(index < list.size()) {
 								break;
@@ -149,7 +149,7 @@ public sealed interface Query<E> {
 				@Override
 				public int size() {
 					while(iterator.hasNext()) {
-						filter.apply(iterator.next())
+						mapper.apply(iterator.next())
 						.ifPresent(list::add);
 					}
 					
@@ -185,18 +185,18 @@ public sealed interface Query<E> {
 
 		/* [...] */
 
-		private QueryImpl(Iterable<? extends E> elements, Function<? super E, ? extends Optional<? extends T>> filter) {
+		private QueryImpl(Iterable<? extends E> elements, Function<? super E, ? extends Optional<? extends T>> mapper) {
 			Objects.requireNonNull(elements);
-			Objects.requireNonNull(filter);
+			Objects.requireNonNull(mapper);
 			this.elements = elements;
-			this.filter = filter;
+			this.mapper = mapper;
 		}
 
 
 		@Override
 		public Stream<T> toStream() {
 			return StreamSupport.stream(elements.spliterator(), false)
-					.flatMap(e -> filter.apply(e).stream());
+					.flatMap(e -> mapper.apply(e).stream());
 		}
 
 		
@@ -211,9 +211,6 @@ public sealed interface Query<E> {
 		public List<T> toList() {
 			return toStream().toList();
 		}
-
-
-
 	}
 }
 ```
@@ -222,3 +219,95 @@ public sealed interface Query<E> {
 6. On souhaite écrire une méthode filter qui permet de sélectionner uniquement les éléments pour lesquels un appel à la fonction prise en paramètre de filter renvoie vrai.
 <br>
 
+
+*On ajoute un champs `filter` correspondant à une liste de `Predicate` à appliquer sur les éléments lors du calcul de `Query`. On modifie également la méthde `toStream` pour filtrer les éléments qui correspondent à tous les filtres dans la liste de `Predicate`*
+
+```java
+public sealed interface Query<E> {
+
+	/* [...] */
+
+	public Query<E> filter(Predicate<? super E> filter);
+
+
+	final class QueryImpl<E, T> implements Query<T> {
+
+		/* [...] */
+
+		private final List<Predicate<? super T>> filters = new ArrayList<>();
+
+		@Override
+		public Query<T> filter(Predicate<? super T> filter) {
+			filters.add(filter);
+			return this;
+		}
+
+		@Override
+		public Stream<T> toStream() {
+			return StreamSupport.stream(elements.spliterator(), false)
+				.flatMap(e -> {
+					var optional = mapper.apply(e);
+					if(optional.isPresent() && filters.stream().allMatch(f -> f.test(optional.get()))) {
+							return optional.stream();
+					}
+					return Stream.<T>empty();
+				});
+		}
+
+	}
+
+}
+```
+
+
+8. On souhaite écrire une méthode map qui renvoie une Query telle que chaque élément est obtenu en appelant la fonction prise en paramètre de la méthode map sur un élément d'une Query d'origine.
+Écrire la méthode map.
+<br>
+
+*La méthode map vas prendre un type nouveau type paramétré `R` et renvoyer une nouvelle QueryImpl avec ce nouveau type.*
+```java
+public sealed interface Query<E> {
+
+	/* [...] */
+
+	public <R> Query<R> map(Function<? super E, ? extends R> function);
+
+	final class QueryImpl<E, T> implements Query<T> {
+		/* [...] */
+
+		@Override
+		public <R> Query<R> map(Function<? super T, ? extends R> function) {
+			return new QueryImpl<E, R>(elements, mapper.andThen(o -> o.map(function)));
+		}
+	}
+}
+```
+
+
+9. Enfin, on souhaite écrire une méthode reduce sur une Query qui marche de la même façon que la méthode reduce à trois paramètres sur un Stream et sachant que comme notre Query n'a pas d'implantation parallel, le troisième paramètre est superflu.
+Écrire la méthode reduce.
+Note: quelle early preview feature peut-on utiliser ici ?
+<br>
+
+```java
+public sealed interface Query<E> {
+
+	/* [...] */
+
+	public <U> U reduce(U identity, BiFunction<U, ? super E, U> accumulator);
+
+	final class QueryImpl<E, T> implements Query<T> {
+		/* [...] */
+		
+		@Override
+		public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+			Objects.requireNonNull(accumulator);
+			var result = identity;
+			for(var e : toList()) {
+				 result = accumulator.apply(result, e);
+			}
+			return result;
+		}
+	}
+}
+```
